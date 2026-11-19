@@ -1,76 +1,115 @@
 # ShootingRangeV2
 
-Desktop application built with Python, PySide6, and OpenCV.
+Aplikasi desktop yang dikembangkan menggunakan **Python, PySide6, dan OpenCV** dengan arsitektur modular untuk mendukung pengembangan antarmuka, integrasi kamera, dan pengelolaan aplikasi.
 
-## Overview
+## Tentang Proyek
 
-ShootingRangeV2 is a desktop application project focused on desktop interface development, camera integration, device connectivity, and application management.
+ShootingRangeV2 merupakan pengembangan lanjutan dari prototype awal aplikasi simulasi shooting range real-time.
 
-The application is developed using a modular architecture to maintain code readability, maintainability, and extensibility.
+Proyek ini berfokus pada pengembangan aplikasi desktop yang terstruktur, mudah dipelihara, dan dapat dikembangkan lebih lanjut melalui pemisahan komponen antarmuka, logika aplikasi, serta layanan pendukung.
 
-## Technology Stack
+## Teknologi yang Digunakan
 
-| Technology | Purpose |
+| Teknologi | Kegunaan |
 |---|---|
-| Python 3.11 | Main programming language |
-| PySide6 | Desktop GUI framework |
-| OpenCV | Camera and video processing |
-| Pytest | Automated testing |
+| Python 3.11 | Bahasa pemrograman utama |
+| PySide6 | Framework antarmuka desktop |
+| OpenCV | Integrasi kamera dan pemrosesan video |
+| NumPy | Pengolahan gambar dan frame kamera |
+| Pytest | Pengujian otomatis aplikasi |
 
-## Current Features
+## Fitur Aplikasi
 
-- Main application window
-- Sidebar navigation
-- Dashboard interface
-- Camera preview page
-- Camera service foundation
-- Application settings page placeholder
+### Fitur yang Sudah Tersedia
 
-## Planned Features
+- Halaman awal aplikasi (Start Screen).
+- Halaman persetujuan pengguna (Agreement Screen).
+- Jendela utama aplikasi.
+- Tiga bagian navigasi utama:
+  - **Quick Start** – Pengaturan koneksi kamera dan tampilan preview.
+  - **Programs** – Antarmuka informasi program.
+  - **Timed Drills** – Antarmuka konfigurasi latihan.
+- Mock Camera untuk pengujian tanpa perangkat kamera fisik.
+- Layanan integrasi kamera fisik menggunakan OpenCV.
+- Fitur Connect dan Disconnect kamera.
+- Tampilan preview kamera secara langsung.
+- Konfigurasi aplikasi terpusat.
+- Struktur aplikasi modular.
+- Pengujian otomatis untuk layanan kamera.
+- Fondasi sistem logging aplikasi.
 
-- Mock camera mode for UI testing
-- Real camera integration
-- Camera connection status
-- Improved dashboard
-- Application configuration
-- Automated testing
+### Rencana Pengembangan
 
-## Project Structure
+- Penyelesaian tampilan halaman Programs berdasarkan prototype awal.
+- Penyempurnaan halaman Timed Drills.
+- Pengembangan lebih lanjut layanan kamera.
+- Pengelolaan data aplikasi.
+- Penambahan pengujian otomatis.
+- Persiapan packaging dan deployment aplikasi.
+
+*Fitur yang direncanakan dapat disesuaikan dengan kebutuhan dan hasil pengembangan selanjutnya.*
+
+## Struktur Proyek
 
 ```text
 ShootingRangeV2/
 ├── assets/
 │   └── images/
+├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── CHANGELOG.md
+│   ├── DEVELOPMENT.md
+│   └── TESTING.md
 ├── src/
 │   └── shooting_range/
 │       ├── config/
+│       │   └── settings.py
 │       ├── core/
+│       │   ├── app.py
+│       │   └── navigation.py
 │       ├── services/
+│       │   ├── camera_service.py
+│       │   └── mock_camera_service.py
 │       ├── ui/
-│       │   └── styles/
-│       └── utils/
+│       │   ├── screens/
+│       │   ├── pages/
+│       │   ├── styles/
+│       │   ├── camera_page.py
+│       │   └── main_window.py
+│       ├── utils/
+│       │   └── logger.py
+│       └── main.py
 ├── tests/
-├── requirements.txt
+│   └── test_camera_service.py
 ├── .gitignore
+├── requirements.txt
 └── README.md
 ```
 
-## Installation
+## Persiapan dan Instalasi
 
-### 1. Clone the repository
+### Persyaratan
+
+- Python 3.11
+- Git
+- Sistem operasi Windows, Linux, atau macOS
+
+### Langkah Instalasi
+
+**1. Clone repository**
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/RakanDhiya/ShootingRangeV2.git
 cd ShootingRangeV2
 ```
 
-### 2. Create virtual environment
+**2. Membuat virtual environment**
 
 ```bash
 python -m venv .venv
 ```
 
-### 3. Activate virtual environment
+**3. Mengaktifkan virtual environment**
 
 Windows PowerShell:
 
@@ -78,36 +117,57 @@ Windows PowerShell:
 .venv\Scripts\Activate.ps1
 ```
 
-### 4. Install dependencies
+**4. Menginstal dependencies**
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Running the Application
+## Menjalankan Aplikasi
 
-Windows PowerShell:
+Dari direktori utama proyek, jalankan perintah berikut melalui Windows PowerShell:
 
 ```powershell
 $env:PYTHONPATH = "src"
 python -m shooting_range.main
 ```
 
-## Development Guidelines
+## Menjalankan Pengujian
 
-- Keep UI components separate from application services.
-- Avoid placing business logic directly inside UI classes.
-- Use reusable components where appropriate.
-- Keep functions and classes focused on a single responsibility.
-- Test new features before integrating them into the application.
-- Update documentation whenever application behavior or architecture changes.
+Untuk menjalankan seluruh pengujian otomatis:
 
-## Project Status
+```bash
+python -m pytest -v
+```
 
-**Development in progress.**
+## Pedoman Pengembangan
 
-The application currently has its initial desktop interface and camera service foundation. Additional features will be implemented and tested incrementally.
+- Mengikuti arsitektur aplikasi modular.
+- Memisahkan komponen antarmuka dengan layanan aplikasi.
+- Menghindari penempatan logika layanan secara langsung di dalam komponen UI.
+- Menggunakan konfigurasi terpusat untuk pengaturan aplikasi.
+- Menulis kode yang jelas dan mudah dipelihara.
+- Menyertakan docstring dan dokumentasi yang sesuai.
+- Menambahkan pengujian otomatis untuk fungsionalitas baru.
+- Memperbarui dokumentasi apabila terdapat perubahan arsitektur atau perilaku aplikasi.
 
-## License
+## Dokumentasi
 
-To be determined.
+Dokumentasi tambahan tersedia di dalam direktori `docs/`:
+
+| Dokumen | Keterangan |
+|---|---|
+| `ARCHITECTURE.md` | Penjelasan arsitektur dan tanggung jawab komponen aplikasi |
+| `DEVELOPMENT.md` | Panduan lingkungan dan proses pengembangan |
+| `TESTING.md` | Strategi dan panduan pengujian |
+| `CHANGELOG.md` | Riwayat perubahan dan pengembangan proyek |
+
+## Status Proyek
+
+**Sedang dalam tahap pengembangan aktif.**
+
+Aplikasi saat ini telah memiliki antarmuka desktop awal, fondasi integrasi kamera, serta pengujian otomatis untuk layanan kamera. Pengembangan selanjutnya akan difokuskan pada penyelesaian antarmuka aplikasi dan penyempurnaan komponen modular.
+
+## Lisensi
+
+Belum ditentukan.
