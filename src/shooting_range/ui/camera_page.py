@@ -22,7 +22,9 @@ from PySide6.QtWidgets import (
 from shooting_range.config.settings import CAMERA_FRAME_INTERVAL_MS
 from shooting_range.services.camera_service import CameraService
 from shooting_range.services.mock_camera_service import MockCameraService
+from shooting_range.utils.logger import get_logger
 
+logger = get_logger(__name__)
 
 class CameraPage(QWidget):
     """Display camera controls and preview in the Quick Start page."""
@@ -276,7 +278,20 @@ class CameraPage(QWidget):
         else:
             self.active_camera = self.physical_camera
 
-        if self.active_camera.connect():
+        try:
+            if not self.active_camera.connect():
+                logger.warning("Failed to connect to the selected camera.")
+
+                self.active_camera = None
+                self.status.setText("Camera unavailable")
+                self.refresh_status_style()
+                return
+
+            logger.info(
+                "Camera UI connected using %s.",
+                self.camera_selector.currentText(),
+            )
+
             self.status.setText("Connected")
             self.status.setProperty("connected", True)
 
@@ -289,53 +304,93 @@ class CameraPage(QWidget):
 
             self.refresh_status_style()
             self.timer.start(CAMERA_FRAME_INTERVAL_MS)
-        else:
+
+        except Exception:
+            logger.exception("Unexpected error while connecting camera.")
+
             self.active_camera = None
             self.status.setText("Camera unavailable")
             self.refresh_status_style()
 
     def update_frame(self):
-        """Retrieve, convert, and display the latest camera frame."""
+        """Retrieve, validate, convert, and display the latest camera frame."""
         if self.active_camera is None:
             return
 
-        frame = self.active_camera.get_frame()
+        try:
+            frame = self.active_camera.get_frame()
 
-        if frame is None:
-            self.disconnect_camera()
-            self.status.setText("Camera disconnected")
-            self.refresh_status_style()
-            return
+            if frame is None:
+                logger.warning("Camera frame is unavailable.")
+                self.disconnect_camera()
+                self.status.setText("Camera disconnected")
+                self.refresh_status_style()
+                return
 
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            if (
+                not hasattr(frame, "shape")
+                or frame.ndim != 3
+                or frame.shape[2] != 3
+                or frame.size == 0
+            ):
+                logger.warning("Camera returned an invalid frame.")
+                self.disconnect_camera()
+                self.status.setText("Invalid camera frame")
+                self.refresh_status_style()
+                return
 
-        height, width, channels = frame.shape
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        image = QImage(
-            frame.data,
-            width,
-            height,
-            channels * width,
-            QImage.Format.Format_RGB888,
-        ).copy()
+            height, width, channels = frame.shape
 
-        pixmap = QPixmap.fromImage(image)
+            image = QImage(
+                frame.data,
+                width,
+                height,
+                channels * width,
+                QImage.Format.Format_RGB888,
+            ).copy()
 
-        self.preview.setPixmap(
-            pixmap.scaled(
-                self.preview.size(),
-                Qt.AspectRatioMode.KeepAspectRatio,
-                Qt.TransformationMode.SmoothTransformation,
+            if image.isNull():
+                logger.warning("Failed to convert camera frame into QImage.")
+                return
+
+            pixmap = QPixmap.fromImage(image)
+
+            self.preview.setPixmap(
+                pixmap.scaled(
+                    self.preview.size(),
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
             )
-        )
+
+        except cv2.error:
+            logger.exception("OpenCV error while processing camera frame.")
+            self.disconnect_camera()
+            self.status.setText("Camera error")
+            self.refresh_status_style()
+
+        except (ValueError, TypeError, AttributeError):
+            logger.exception("Invalid camera frame data.")
+            self.disconnect_camera()
+            self.status.setText("Invalid camera frame")
+            self.refresh_status_style()
 
     def disconnect_camera(self):
         """Stop frame updates and release the active camera source."""
         self.timer.stop()
 
         if self.active_camera is not None:
-            self.active_camera.disconnect()
+            camera = self.active_camera
             self.active_camera = None
+
+            try:
+                camera.disconnect()
+                logger.info("Camera UI disconnected.")
+
+            except Exception:
+                logger.exception("Unexpected error while disconnecting camera.")
 
         self.camera_selector.setEnabled(True)
         self.connect_button.setEnabled(True)
